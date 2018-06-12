@@ -19,6 +19,7 @@ fit_kpi<-function(file_linc,file_control,file_calib,
 )
 {
 
+
 #this imports the data from a lincomycin treated sample
 #it uses the fit_model_fofm from the psifluo package that processes
 #data from the FL3500 PSI fluorometers
