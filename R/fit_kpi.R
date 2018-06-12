@@ -8,7 +8,7 @@
 #' @param recovery_start light step where the recovery period starts
 #' @param recovery_finish light step where the recovery period finishes
 #' @param light_steps number of light steps inside the file, default=10
-#' @return prints the results in the console and produces a text file with them also
+#' @return Returns the results as a dataframe and produces a text file with them.
 #' @export
 fit_kpi<-function(file_linc,file_control,file_calib,
                   fit_start = 2,
@@ -27,7 +27,7 @@ fit_kpi<-function(file_linc,file_control,file_calib,
 psifluo::fit_model_fofm(file_name = file_linc,
                num_steps = light_steps,
                calib_file = file_calib,
-               out_name = "marlene_linco"
+               out_name = "lincomycin"
   )
 
 ################################################################################
@@ -247,7 +247,7 @@ mtext(side =3, paste('sigmaPSII i = ',sigmaPSII_legend),line=-1.5)
 psifluo::fit_model_fofm(file_name = file_control,
                num_steps = light_steps,
                calib_file = file_calib,
-               out_name = "marlene_control"
+               out_name = "control"
 )
 
 
@@ -348,19 +348,22 @@ plot4()
 ################################################################################
 
 #printing result on the console
-print(paste('Kpi = ',kpi_legend))
-print(paste('sigma = ',sigma_legend))
-print(paste('sigmaPSII_i = ',sigmaPSII_legend))
-print(paste('Krec = ',krec_legend))
+#print(paste('Kpi = ',kpi_legend))
+#print(paste('sigma = ',sigma_legend))
+#print(paste('sigmaPSII_i = ',sigmaPSII_legend))
+#print(paste('Krec = ',krec_legend))
 
 #write a csv with the results
-output<-as.data.frame(cbind(c('Kpi','sigma','sigmaPSII_i','Krec'),
-              c(kpi_legend,sigma_legend,sigmaPSII_legend,krec_legend)))
+parameters<-as.data.frame(cbind(c('Kpi','sigma','sigmaPSII_i','Krec'),
+              c(kpi_legend,sigma_legend,sigmaPSII_legend,krec_legend))
+              ,stringsAsFactors=FALSE)
 
-names(output)<-c('parameter','value')
+names(parameters)<-c('parameter','value')
 
-write.table(output,file = 'Kpi_output.txt',sep=",",col.names = TRUE,row.names = FALSE)
+parameters$value<-as.numeric(parameters$value)
 
+write.table(parameters,file = 'Kpi_output.txt',sep=",",col.names = TRUE,row.names = FALSE)
 
+return(parameters)
 
 }
