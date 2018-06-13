@@ -25,7 +25,7 @@ fit_kpi(file_linc, file_control, file_calib, fit_start = 2, fit_finish = 8,
 \item{light_steps}{number of light steps inside the file, default=10}
 }
 \value{
-prints the results in the console and produces a text file with them also
+Returns the results as a dataframe and produces a text file with them.
 }
 \description{
 Function for determining Kpi from FRRF data

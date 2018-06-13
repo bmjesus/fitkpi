@@ -146,6 +146,10 @@ x_trim <-x[1:fit_final]
 #(the probability of photoinactivation per incident photon)
 fit_sigma<-minpack.lm::nlsLM(y_trim ~ y_trim[1]*exp(-k_sigma*x_trim),  start=list(k_sigma=1*10^-25))
 
+#optional linear fit to log transformed data, doesn't seem to make much difference
+#fit_sigma_lm<-lm(log(y_trim)~ x_trim)
+#print(summary(fit_sigma_lm))
+
 p_sigma<-summary(fit_sigma)$parameters[1]
 
 pred_y_sigma<-y_trim[1]*exp(-p_sigma*x_trim)
@@ -286,14 +290,11 @@ y_trim <-y_corr[1:fit_final]
 x_trim <-x[1:fit_final]
 
 
+#fitting the single phase exponential decay
 fit_krec<-minpack.lm::nlsLM(y_trim~y_trim[1]*((krec+(p_kpi_trim*((exp(-(p_kpi_trim+krec)*x_trim)))))/(p_kpi_trim+krec)),start=list(krec=0.0001))
-
 p_krec<-summary(fit_krec)$parameters[1]
-
 pred_krec<-y_trim[1]*((p_krec+(p_kpi_trim*((exp(-(p_kpi_trim+p_krec)*x_trim)))))/(p_kpi_trim+p_krec))
-
 krec_legend<-formatC(p_krec, format = "e", digits = 2)
-
 
 #storing the various axis so that I can use them later
 x4<-x
@@ -303,6 +304,33 @@ y_trim4<-y_trim
 
 #correcting the starting point for the trimmed data by re-adding time
 x_trim4 <- x_trim4 + t_abs[fit_start]
+
+###############################################################
+#fitting the exponential rise to the recovery period at the end
+#############################################################
+
+#set up the first recovery point as time zer0
+x_rec<-t_abs[recovery_start:recovery_finish] - t_abs[recovery_start]
+#print(x_rec)
+y_rec<-fv_fm_control[recovery_start:recovery_finish]
+#print(y_rec)
+fit_krec_rec<-minpack.lm::nlsLM(y_rec ~ y_rec[1]*exp(krec2*x_rec),  start=list(krec2=1*10^-08))
+#print(fit_krec_rec)
+
+p_krec2<-summary(fit_krec_rec)$parameters[1]
+pred_y_krec2<-y_rec[1]*exp(p_krec2*x_rec)
+
+#print(pred_y_krec2)
+
+krec2_legend<-formatC(p_krec2, format = "e", digits = 2)
+
+#readding the time to x axis
+x_rec2<-t_abs[recovery_start:recovery_finish]
+
+#############################################################
+#############################################################
+
+
 
 
 #storing the plot inside a function so that I can build a multiplot figure at the end
@@ -321,7 +349,12 @@ legend(2000,0.54,legend = c('original','trim-corrected'),pch=21
 axis(4)
 mtext(side = 4, "Fv/Fm",las=3,cex=0.8,line=2.5)
 mtext(side = 1, "time (seconds)",las=1,cex=0.8,line=2)
-mtext(side =3, paste('Krec = ',krec_legend),line=-1.5)
+mtext(side =3, paste('Krec = ',krec_legend),line=-1.5,col=2)
+
+####recovery at the end
+
+points(x_rec2,pred_y_krec2,type = 'l',lty=2,col=3)
+mtext(side =3, paste('Krec 2 = ',krec2_legend),line=-3,col=3)
 
 
 }
@@ -354,8 +387,8 @@ plot4()
 #print(paste('Krec = ',krec_legend))
 
 #write a csv with the results
-parameters<-as.data.frame(cbind(c('Kpi','sigma','sigmaPSII_i','Krec'),
-              c(kpi_legend,sigma_legend,sigmaPSII_legend,krec_legend))
+parameters<-as.data.frame(cbind(c('Kpi','sigma','sigmaPSII_i','Krec','Krec2'),
+              c(kpi_legend,sigma_legend,sigmaPSII_legend,krec_legend,krec2_legend))
               ,stringsAsFactors=FALSE)
 
 names(parameters)<-c('parameter','value')
